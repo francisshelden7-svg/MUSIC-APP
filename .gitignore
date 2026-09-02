@@ -1,0 +1,13 @@
+# System Files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary & Log files
+*.log
+scratch/
+.system_generated/
+
+# Editor directories
+.vscode/
+.idea/

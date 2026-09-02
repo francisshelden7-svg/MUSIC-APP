@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeonWave - Dynamic Cloudinary Music Player</title>
+  <meta name="description" content="A state-of-the-art dynamic music player powered by Cloudinary audio transformations, real-time audio visualizer, and direct media uploads.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Ambient Glowing Background Spheres -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
+  <!-- Main App Shell -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand-container">
+        <div class="brand-icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">NeonWave</h1>
+        </div>
+        <span class="brand-badge">Cloudinary Dynamic</span>
+      </div>
+
+      <div class="header-actions">
+        <!-- Cloudinary Connection Status Pill -->
+        <button id="cloudStatusPill" class="cloudinary-status-pill" title="Configure Cloudinary Cloud & Preset">
+          <span class="status-indicator-dot"></span>
+          <span id="cloudStatusText">Cloud: demo (Demo)</span>
+        </button>
+
+        <!-- Upload Button -->
+        <button id="openUploadBtn" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+          </svg>
+          Upload to Cloudinary
+        </button>
+
+        <!-- Settings Gear Button -->
+        <button id="openSettingsBtn" class="btn btn-secondary btn-icon-only" title="Cloudinary Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Player & Playlist Grid -->
+    <main class="main-layout">
+
+      <!-- LEFT COLUMN: Dynamic Player -->
+      <section id="playerCard" class="player-card">
+        
+        <!-- Top Track Cloudinary Badge -->
+        <div id="trackBadge" class="cloudinary-track-badge">Cloudinary Stream</div>
+
+        <!-- Vinyl Record & Album Art Stage -->
+        <div class="visual-stage">
+          <div class="vinyl-container">
+            <div class="album-ambient-glow"></div>
+            <div id="vinylDisc" class="vinyl-disc">
+              <div class="album-art-center">
+                <img id="coverImage" src="https://res.cloudinary.com/demo/image/upload/c_fill,w_500,h_500/sample.jpg" alt="Current Album Art" />
+                <div class="center-spindle-hole"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track Information -->
+        <div class="track-info-section">
+          <h2 id="trackTitle" class="track-title">Midnight Horizon</h2>
+          <p id="trackArtist" class="track-artist">CyberPulse</p>
+        </div>
+
+        <!-- Real-Time Audio Visualizer Canvas -->
+        <div class="visualizer-wrapper">
+          <canvas id="visualizerCanvas"></canvas>
+          <div class="visualizer-controls-bar">
+            <button class="viz-mode-btn active" data-mode="bars" title="Spectrum Bars">BARS</button>
+            <button class="viz-mode-btn" data-mode="wave" title="Waveform">WAVE</button>
+            <button class="viz-mode-btn" data-mode="circle" title="Radial">RADIAL</button>
+          </div>
+        </div>
+
+        <!-- Seek Scrubber Progress Bar -->
+        <div class="progress-container">
+          <div class="time-stamps">
+            <span id="currentTime">0:00</span>
+            <span id="totalTime">0:00</span>
+          </div>
+          <div id="seekTrack" class="slider-track" role="slider" aria-label="Seek Progress" tabindex="0">
+            <div id="seekProgress" class="slider-progress"></div>
+            <div id="seekThumb" class="slider-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Core Playback Controls -->
+        <div class="controls-container">
+          <!-- Shuffle Button -->
+          <button id="shuffleBtn" class="control-btn" title="Toggle Shuffle (S)">
+            <svg viewBox="0 0 24 24">
+              <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
+            </svg>
+          </button>
+
+          <!-- Previous Track -->
+          <button id="prevBtn" class="control-btn" title="Previous Track">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+
+          <!-- Play / Pause Main Button -->
+          <button id="playPauseBtn" class="play-pause-btn" title="Play / Pause (Space)">
+            <svg id="playIcon" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+
+          <!-- Next Track -->
+          <button id="nextBtn" class="control-btn" title="Next Track">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+
+          <!-- Repeat Mode Button -->
+          <button id="repeatBtn" class="control-btn active" title="Toggle Repeat (L)">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Volume & Dynamic Cloudinary Quality Controls -->
+        <div class="bottom-extras">
+          <!-- Volume Bar -->
+          <div class="volume-wrapper">
+            <button id="muteBtn" class="control-btn" title="Mute (M)">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+            </button>
+            <div id="volumeTrack" class="volume-track" role="slider" aria-label="Volume Slider" tabindex="0">
+              <div id="volumeProgress" class="volume-progress"></div>
+            </div>
+          </div>
+
+          <!-- Dynamic Bitrate Selector -->
+          <div class="audio-settings-quick">
+            <span style="font-size: 0.75rem; color: var(--text-subtle);">Bitrate:</span>
+            <select id="qualitySelect" class="quality-badge-select" title="Cloudinary Dynamic Audio Bitrate">
+              <option value="auto">Dynamic Auto</option>
+              <option value="128k">128 kbps</option>
+              <option value="192k">192 kbps</option>
+              <option value="320k">320 kbps (HQ)</option>
+            </select>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: Playlist & Cloud Hub -->
+      <section class="library-card">
+        
+        <!-- Library Header -->
+        <div class="library-header">
+          <div class="library-title-group">
+            <h2>
+              <span>Queue &amp; Library</span>
+              <span id="trackCountBadge" class="track-count-badge">4 tracks</span>
+            </h2>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-filter-box">
+          <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search track, artist, genre..." />
+          </div>
+        </div>
+
+        <!-- Genre Filter Pills -->
+        <div class="filter-pills">
+          <button class="filter-pill active" data-genre="all">All Tracks</button>
+          <button class="filter-pill" data-genre="synthwave">Synthwave</button>
+          <button class="filter-pill" data-genre="electronic">Electronic</button>
+          <button class="filter-pill" data-genre="ambient">Ambient</button>
+          <button class="filter-pill" data-genre="cloudinary">Cloudinary</button>
+          <button class="filter-pill" data-genre="favorites">Favorites</button>
+        </div>
+
+        <!-- Scrollable Tracks Container -->
+        <div id="playlistTracks" class="playlist-tracks">
+          <!-- Dynamic Track Cards Rendered Here -->
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer with Keyboard Shortcuts -->
+    <footer class="app-footer">
+      <div>Powered by <strong>Cloudinary Dynamic Delivery</strong> &amp; Web Audio API</div>
+      <div class="shortcuts-hint">
+        <span class="shortcut-chip"><span class="kbd-key">Space</span> Play/Pause</span>
+        <span class="shortcut-chip"><span class="kbd-key">&larr;/&rarr;</span> Seek</span>
+        <span class="shortcut-chip"><span class="kbd-key">&uarr;/&darr;</span> Volume</span>
+        <span class="shortcut-chip"><span class="kbd-key">M</span> Mute</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 1: CLOUDINARY UPLOAD MODAL
+       ========================================================================== -->
+  <div id="uploadModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="uploadModalTitle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#6366f1">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+          </svg>
+          Add Tracks to Cloudinary
+        </h3>
+        <button id="closeUploadModalBtn" class="modal-close-btn" title="Close">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      <!-- Upload Tabs -->
+      <div class="modal-tabs">
+        <button id="tabUploadFile" class="modal-tab-btn active">Direct Cloudinary Upload</button>
+        <button id="tabUploadUrl" class="modal-tab-btn">Import Cloudinary URL / Public ID</button>
+      </div>
+
+      <!-- TAB 1: Direct File Upload to Cloudinary -->
+      <div id="fileUploadSection">
+        
+        <!-- Audio Dropzone -->
+        <div class="form-group">
+          <label class="form-label">1. Audio File (.mp3, .wav, .m4a, .ogg, .flac)</label>
+          <div id="audioDropzone" class="upload-dropzone">
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            </div>
+            <div class="dropzone-title">Drag &amp; drop audio file here or browse</div>
+            <div class="dropzone-desc">Audio will upload directly to your Cloudinary storage</div>
+            <span id="audioFilePill" class="file-selected-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <span id="audioFileName">Selected audio</span>
+            </span>
+          </div>
+          <input type="file" id="audioFileInput" accept="audio/*" style="display: none;" />
+        </div>
+
+        <!-- Album Cover Dropzone -->
+        <div class="form-group">
+          <label class="form-label">2. Cover Artwork (Optional image)</label>
+          <div id="coverDropzone" class="upload-dropzone" style="padding: 1rem;">
+            <div class="dropzone-title" style="font-size: 0.88rem;">Drop album cover image or click to select</div>
+            <span id="coverFilePill" class="file-selected-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <span id="coverFileName">Selected cover</span>
+            </span>
+          </div>
+          <input type="file" id="coverFileInput" accept="image/*" style="display: none;" />
+        </div>
+
+        <!-- Track Metadata Fields -->
+        <div class="form-group">
+          <label class="form-label" for="newTrackTitle">Track Title</label>
+          <input type="text" id="newTrackTitle" class="form-input" placeholder="e.g. Starlight Drive" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="newTrackArtist">Artist</label>
+            <input type="text" id="newTrackArtist" class="form-input" placeholder="e.g. Nova Eclipse" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newTrackGenre">Genre</label>
+            <input type="text" id="newTrackGenre" class="form-input" placeholder="e.g. Synthwave" value="Synthwave" />
+          </div>
+        </div>
+
+        <!-- Upload Progress Indicator -->
+        <div id="uploadProgressContainer" class="upload-progress-container">
+          <div class="upload-progress-header">
+            <span id="uploadProgressText">Uploading to Cloudinary... 0%</span>
+          </div>
+          <div class="upload-progress-bar-bg">
+            <div id="uploadProgressFill" class="upload-progress-fill"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button id="submitUploadBtn" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            Upload &amp; Add to Playlist
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 2: Quick URL Importer -->
+      <div id="urlUploadSection" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="urlTrackAudio">Cloudinary Audio URL or Stream Link *</label>
+          <input type="url" id="urlTrackAudio" class="form-input" placeholder="https://res.cloudinary.com/.../video/upload/my_track.mp3" />
+          <p class="form-hint">Paste any Cloudinary audio stream link or hosted mp3/audio file</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="urlTrackCover">Album Cover Image URL (Optional)</label>
+          <input type="url" id="urlTrackCover" class="form-input" placeholder="https://res.cloudinary.com/.../image/upload/cover.jpg" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="urlTrackTitle">Track Title</label>
+          <input type="text" id="urlTrackTitle" class="form-input" placeholder="e.g. Neon Horizon" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="urlTrackArtist">Artist</label>
+            <input type="text" id="urlTrackArtist" class="form-input" placeholder="e.g. Synth Pulse" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="urlTrackGenre">Genre</label>
+            <input type="text" id="urlTrackGenre" class="form-input" placeholder="e.g. Electronic" value="Cloudinary" />
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <button id="submitUrlBtn" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            Add to Playlist
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL 2: CLOUDINARY SETTINGS MODAL
+       ========================================================================== -->
+  <div id="settingsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="settingsModalTitle">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#06b6d4">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+          Cloudinary Cloud Configuration
+        </h3>
+        <button id="closeSettingsModalBtn" class="modal-close-btn" title="Close">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="settingsCloudName">Cloudinary Cloud Name</label>
+        <input type="text" id="settingsCloudName" class="form-input" placeholder="e.g. demo or your_cloud_name" />
+        <p class="form-hint">Default is "demo". Enter your own Cloudinary cloud name to connect your account.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="settingsUploadPreset">Unsigned Upload Preset</label>
+        <input type="text" id="settingsUploadPreset" class="form-input" placeholder="e.g. my_music_preset" />
+        <p class="form-hint">Required for direct browser file uploads. Created in Cloudinary Console &rarr; Settings &rarr; Upload &rarr; Add Upload Preset (Signing Mode: Unsigned).</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="settingsAudioQuality">Default Dynamic Bitrate</label>
+        <select id="settingsAudioQuality" class="form-input">
+          <option value="auto">Dynamic Auto Optimization</option>
+          <option value="128k">128 kbps (Data Saver)</option>
+          <option value="192k">192 kbps (Standard High Quality)</option>
+          <option value="320k">320 kbps (Maximum Fidelity)</option>
+        </select>
+        <p class="form-hint">Cloudinary on-the-fly audio transformation applied to media streams.</p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.75rem;">
+        <button id="resetDemoTracksBtn" class="btn btn-secondary" style="flex: 1; justify-content: center;">
+          Reset Library
+        </button>
+        <button id="saveSettingsBtn" class="btn btn-primary" style="flex: 1; justify-content: center;">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Application Module Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
