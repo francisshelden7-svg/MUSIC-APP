@@ -365,6 +365,18 @@ class App {
           break;
       }
     });
+
+    // Cross-tab synchronization with Admin Studio
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'neonwave_playlist_tracks') {
+        this.playlist.tracks = this.playlist.loadTracks();
+        this.renderPlaylist();
+      }
+      if (e.key === 'neonwave_cloudinary_config') {
+        this.cloudinary.config = this.cloudinary.loadConfig();
+        this.updateCloudinaryBadge();
+      }
+    });
   }
 
   setupDropzone(zoneEl, inputEl, onFileSelected) {

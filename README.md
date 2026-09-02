@@ -24,6 +24,13 @@
   - Filter by genre (`Synthwave`, `Electronic`, `Ambient`, `Cloudinary`, `Favorites`).
   - Real-time search by title or artist.
   - Persistent playlist storage with `localStorage`.
+- **⚡ Admin Studio & Media Manager (`admin.html`)**:
+  - **Overview & KPIs**: Track counts, artists, genres, Cloudinary dynamic streams, catalog playtime, and genre distribution.
+  - **Track Management (CRUD)**: Searchable, filterable, sortable glassmorphic data table with inline audio previews, single & bulk delete, batch genre reassignment.
+  - **Add Track Studio**: Direct unsigned Cloudinary upload with real-time progress bar + direct stream link importer with live player mockup preview.
+  - **Cloudinary Dynamic Playground**: Interactive dynamic URL generator with live audio player and album art crop modes (`c_fill`, `c_thumb`, `c_pad`, `r_max`).
+  - **Database & Backup**: JSON catalog export & import/restore, sample catalog seeder, local storage usage meter, and activity audit log.
+  - **Cross-Tab Synchronization**: Changes in Admin immediately update the live player in real-time.
 - **⌨️ Keyboard Shortcuts**:
   - `Space`: Play / Pause
   - `←` / `→`: Seek ±5 seconds
@@ -41,7 +48,8 @@ Simply launch the included PowerShell HTTP server:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\server.ps1 -Port 8080
 ```
-Open **`http://localhost:8080`** in any modern web browser.
+- Open **`http://localhost:8080`** for the NeonWave Music Player.
+- Open **`http://localhost:8080/admin.html`** (or click **Admin Panel** in the player header) for the Admin Studio.
 
 ### 2. Connecting Your Own Cloudinary Account
 1. Open the player and click the **Cloud Status** badge in the header (or the Settings gear).
@@ -55,17 +63,20 @@ Open **`http://localhost:8080`** in any modern web browser.
 
 ```
 my play/
-├── index.html        # Main HTML5 application shell & modals
+├── index.html        # Main HTML5 music player shell & modals
+├── admin.html        # NeonWave Admin Studio & catalog suite
 ├── server.ps1        # Built-in lightweight HTTP static server with CORS
 ├── README.md         # Project documentation
 ├── .gitignore        # Git ignore rules
 ├── css/
-│   └── style.css     # Glassmorphic cyberpunk design system
+│   ├── style.css     # Glassmorphic cyberpunk design system
+│   └── admin.css     # Admin Studio layout, tables, metrics & playground styles
 └── js/
-    ├── app.js        # Main coordinator & event listeners
+    ├── app.js        # Main player coordinator & cross-tab sync
+    ├── admin.js      # Admin Studio controller, CRUD, metrics & playground
     ├── player.js     # Audio engine & Web Audio API setup
     ├── visualizer.js # Canvas spectrum, wave, and radial visualizers
-    ├── playlist.js   # Playlist manager & local storage persistence
+    ├── playlist.js   # Playlist manager, CRUD, bulk actions, and activity logs
     └── cloudinary.js # Cloudinary upload & dynamic transformation API
 ```
 
